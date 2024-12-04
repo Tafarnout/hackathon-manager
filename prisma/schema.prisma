@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Hackathon {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+  status      String      // UPCOMING, ACTIVE, COMPLETED
+  skillLevel  String      // BEGINNER, INTERMEDIATE, ADVANCED
+  categories  String[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  createdBy   User        @relation(fields: [userId], references: [id])
+  userId      String
+  participants Participant[]
+  submissions Submission[]
+}
+
+model User {
+  id          String      @id @default(cuid())
+  name        String
+  email       String      @unique
+  image       String?
+  hackathons  Hackathon[]
+  participants Participant[]
+  submissions Submission[]
+}
+
+model Participant {
+  id          String    @id @default(cuid())
+  hackathon   Hackathon @relation(fields: [hackathonId], references: [id])
+  hackathonId String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  joinedAt    DateTime  @default(now())
+
+  @@unique([hackathonId, userId])
+}
+
+model Submission {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  githubUrl   String?
+  demoUrl     String?
+  hackathon   Hackathon @relation(fields: [hackathonId], references: [id])
+  hackathonId String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
